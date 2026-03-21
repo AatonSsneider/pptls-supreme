@@ -62,4 +62,8 @@ document.getElementById("estado").innerText=
 
 }
 
+if(data.tipo==="esperando"){
+document.getElementById("estado").innerText=data.mensaje
+}
+
 }
