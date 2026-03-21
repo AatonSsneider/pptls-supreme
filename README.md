@@ -1,0 +1,2 @@
+# pptls-supreme
+JUEGO DE PIEDRA, PAPEL, TIJERA, LAGARTO, SPOCK
