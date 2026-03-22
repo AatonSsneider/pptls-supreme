@@ -389,7 +389,8 @@
         });
     });
 
-    const ws = new WebSocket(`ws://${location.host}`);
+    // anterior    const ws = new WebSocket(`ws://${location.host}`);
+    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss://' : 'ws://'}${location.host}`);
     let jugador;
     let miNombre = '';
     let puntajes = [0, 0];
@@ -466,7 +467,7 @@
         opcionesJ2.innerHTML = '';
 
         const iconos = {
-            piedra: '🪨🗿',
+            piedra: '🪨',
             papel: '📄',
             tijera: '✂️',
             lagarto: '🦎',
