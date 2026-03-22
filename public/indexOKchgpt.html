@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PPTLS SUPREME</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Piedra Papel Tijera Lagarto Spock</h1>
+
+<div id="login">
+<input id="nombre" placeholder="Tu nombre">
+<button onclick="buscar()">Buscar partida</button>
+<button onclick="jugarIA()">Jugar contra IA</button>
+</div>
+
+<div id="juego" style="display:none">
+
+<h2 id="jugadores"></h2>
+
+<div class="opciones">
+
+<button onclick="enviar('piedra')">🪨</button>
+<button onclick="enviar('papel')">📄</button>
+<button onclick="enviar('tijera')">✂️</button>
+<button onclick="enviar('lagarto')">🦎</button>
+<button onclick="enviar('spock')">🖖</button>
+
+</div>
+
+<h3 id="estado"></h3>
+
+</div>
+
+<script src="game.js"></script>
+
+</body>
+</html>
