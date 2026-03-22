@@ -12,7 +12,7 @@ const wss=new WebSocket.Server({server})
 app.use(cors())
 app.use(express.static("public"))
 
-const PORT=process.env.PORT||3000
+const PORT=process.env.PORT||10000
 
 let salas=[]
 let jugadoresOnline=0
