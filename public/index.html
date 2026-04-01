@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PPTLS Online - By Omnineti</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+font-family:Segoe UI,Arial;
+background:#1a1a1a;
+color:#e0e0e0;
+text-align:center;
+margin:0;
+display:flex;
+flex-direction:column;
+min-height:100vh;
+transition:0.3s;
+}
+
+body.claro{
+background:#f5f5f5;
+color:#333;
+}
+
+.contenedor{
+max-width:1100px;
+margin:auto;
+padding:20px;
+flex:1;
+}
+
+h1{
+color:#4CAF50;
+font-size:clamp(28px,5vw,40px);
+margin-bottom:30px;
+}
+
+#login,#juego{
+background:rgba(0,0,0,0.35);
+padding:30px;
+border-radius:15px;
+margin:20px 0;
+}
+
+body.claro #login,
+body.claro #juego{
+background:rgba(255,255,255,0.7);
+}
+
+#nombre{
+padding:12px;
+font-size:16px;
+border-radius:8px;
+border:2px solid #4CAF50;
+background:#333;
+color:white;
+width:260px;
+}
+
+button{
+padding:12px 20px;
+margin:10px;
+border:none;
+border-radius:8px;
+font-size:16px;
+cursor:pointer;
+font-weight:bold;
+background:#4CAF50;
+color:white;
+transition:0.2s;
+}
+button:hover{
+transform:scale(1.02);
+background:#45a049;
+}
+
+.opciones{
+display:flex;
+justify-content:center;
+flex-wrap:wrap;
+margin-top:20px;
+}
+
+.opcion{
+width:90px;
+height:90px;
+font-size:40px;
+border-radius:50%;
+background:#2d2d2d;
+border:3px solid #4CAF50;
+display:flex;
+align-items:center;
+justify-content:center;
+margin:8px;
+cursor:pointer;
+transition:0.25s;
+}
+body.claro .opcion{
+background:#e0e0e0;
+}
+.opcion:hover{
+transform:scale(1.15);
+border-color:#ffc107;
+}
+
+#estado{
+margin-top:20px;
+font-size:20px;
+padding:15px;
+border-radius:10px;
+background:rgba(0,0,0,0.4);
+white-space:pre-line;
+min-height:120px;
+}
+
+.estadisticas{
+margin-top:30px;
+display:flex;
+justify-content:center;
+gap:40px;
+flex-wrap:wrap;
+}
+
+.jugador{
+background:rgba(0,0,0,0.3);
+padding:15px;
+border-radius:10px;
+min-width:200px;
+}
+body.claro .jugador{
+background:rgba(0,0,0,0.05);
+}
+
+.badge{
+background:#4CAF50;
+padding:5px 10px;
+border-radius:20px;
+margin:3px;
+display:inline-block;
+color:white;
+}
+
+/* Marcador de victorias */
+.scoreboard-wrapper{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:15px;
+margin-top:20px;
+margin-bottom:15px;
+}
+.scoreboard{
+display:flex;
+justify-content:center;
+gap:30px;
+background:rgba(0,0,0,0.5);
+padding:10px 20px;
+border-radius:50px;
+width:fit-content;
+}
+.score-item{
+font-size:22px;
+font-weight:bold;
+}
+.score-number{
+font-size:32px;
+color:#ffc107;
+margin-left:8px;
+}
+.vs-badge{
+font-size:20px;
+color:#aaa;
+}
+
+/* Botón de reinicio circular pequeño */
+.reset-score-circle{
+width:36px;
+height:36px;
+border-radius:50%;
+background:#ff9800;
+color:white;
+font-size:18px;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+transition:0.2s;
+border:none;
+margin:0;
+padding:0;
+box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+.reset-score-circle:hover{
+transform:scale(1.05);
+background:#f57c00;
+}
+.reset-score-circle:active{
+transform:scale(0.95);
+}
+
+/* Botones pequeños flotantes */
+.floating-buttons{
+position:fixed;
+bottom:20px;
+left:20px;
+display:flex;
+gap:12px;
+}
+.floating-btn{
+width:48px;
+height:48px;
+border-radius:50%;
+background:#4CAF50;
+color:white;
+font-size:24px;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+transition:0.2s;
+box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+.floating-btn:hover{
+transform:scale(1.05);
+background:#45a049;
+}
+.chat-btn{
+background:#2196F3;
+}
+.chat-btn:hover{
+background:#1976D2;
+}
+
+/* CHAT WINDOW */
+.chat-window-container{
+position:fixed;
+bottom:80px;
+left:20px;
+width:320px;
+z-index:1000;
+transition:all 0.3s ease;
+display:none;
+}
+.chat-window-container.open{
+display:block;
+}
+.chat-window{
+background:rgba(30,30,40,0.98);
+backdrop-filter:blur(10px);
+border-radius:12px;
+box-shadow:0 8px 20px rgba(0,0,0,0.5);
+overflow:hidden;
+display:flex;
+flex-direction:column;
+height:380px;
+border:1px solid #4CAF50;
+}
+body.claro .chat-window{
+background:rgba(250,250,255,0.98);
+border-color:#4CAF50;
+}
+.chat-header{
+background:#2c3e2c;
+padding:12px;
+font-weight:bold;
+text-align:center;
+color:white;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+.chat-header button{
+background:none;
+border:none;
+color:white;
+font-size:20px;
+cursor:pointer;
+padding:0;
+margin:0;
+width:30px;
+height:30px;
+}
+.chat-messages{
+flex:1;
+overflow-y:auto;
+padding:12px;
+font-size:13px;
+text-align:left;
+display:flex;
+flex-direction:column;
+gap:8px;
+}
+.chat-message{
+padding:6px 12px;
+border-radius:12px;
+max-width:85%;
+word-wrap:break-word;
+font-size:13px;
+}
+.chat-message.own{
+background:#4CAF50;
+color:white;
+align-self:flex-end;
+}
+.chat-message.other{
+background:#444;
+color:#eee;
+align-self:flex-start;
+}
+body.claro .chat-message.other{
+background:#e0e0e0;
+color:#111;
+}
+.chat-message.system{
+background:#ff9800;
+color:white;
+align-self:center;
+font-style:italic;
+font-size:11px;
+max-width:90%;
+text-align:center;
+}
+.chat-input-area{
+display:flex;
+border-top:1px solid #4CAF50;
+padding:10px;
+background:rgba(0,0,0,0.3);
+gap:8px;
+}
+.chat-input-area input{
+flex:1;
+padding:8px 12px;
+border-radius:20px;
+border:1px solid #4CAF50;
+background:#2d2d2d;
+color:white;
+outline:none;
+}
+body.claro .chat-input-area input{
+background:white;
+color:#111;
+}
+.chat-input-area button{
+padding:8px 16px;
+margin:0;
+background:#4CAF50;
+}
+.notificacion-chat{
+position:fixed;
+bottom:100px;
+left:80px;
+background:#2196F3;
+color:white;
+border-radius:20px;
+padding:6px 14px;
+font-size:12px;
+animation: fadeOut 3s forwards;
+pointer-events:none;
+z-index:1002;
+}
+@keyframes fadeOut{
+0%{opacity:1;transform:translateY(0);}
+70%{opacity:1;}
+100%{opacity:0;transform:translateY(-10px);display:none;}
+}
+footer{
+margin-top:40px;
+padding:20px;
+background:rgba(0,0,0,0.5);
+color:#888;
+font-size:14px;
+}
+.audio{
+position:fixed;
+bottom:20px;
+right:20px;
+}
+@media (max-width:500px){
+.chat-window-container{ width:280px; left:10px; bottom:70px; }
+}
+</style>
+</head>
+<body>
+
+<div class="contenedor">
+
+<h1>🪨 Piedra Papel Tijera Lagarto Spock 📄</h1>
+
+<div id="login">
+<input id="nombre" placeholder="Tu nombre" autocomplete="off">
+<br>
+<button onclick="buscar()">🔍 Buscar partida</button>
+<button onclick="jugarIA()">🤖 Jugar contra IA</button>
+</div>
+
+<div id="juego" style="display:none">
+<h2 id="jugadores"></h2>
+
+<div class="scoreboard-wrapper">
+  <button class="reset-score-circle" onclick="confirmarResetScore()" title="Reiniciar marcador">🔄</button>
+  <div class="scoreboard">
+    <div class="score-item">🏆 <span id="scoreJ1">0</span></div>
+    <div class="vs-badge">VS</div>
+    <div class="score-item">🏆 <span id="scoreJ2">0</span></div>
+  </div>
+</div>
+
+<div class="opciones">
+<div class="opcion" onclick="tirar('piedra')">🪨</div>
+<div class="opcion" onclick="tirar('papel')">📄</div>
+<div class="opcion" onclick="tirar('tijera')">✂️</div>
+<div class="opcion" onclick="tirar('lagarto')">🦎</div>
+<div class="opcion" onclick="tirar('spock')">🖖</div>
+</div>
+
+<h3 id="estado"></h3>
+
+<div class="estadisticas">
+<div class="jugador">
+<h4 id="nombre1">Jugador 1</h4>
+<div id="stats1"></div>
+</div>
+<div class="jugador">
+<h4 id="nombre2">Jugador 2</h4>
+<div id="stats2"></div>
+</div>
+</div>
+</div>
+
+<footer>
+  <p> Piedra(Tijera-Lagarto)| Papel(Piedra-Spock)| Tijera(Papel-Lagarto)| Lagarto(Spock-Papel)| Spock(Tijera-Piedra)
+  </p>
+  <p>Design Felipe Aguilera Gómez by OmniNeti 2026 CopyRight ©</p>
+</footer>
+</div>
+
+<div class="audio">
+<button onclick="toggleAudio()" id="btnAudio">🔊</button>
+</div>
+
+<div class="floating-buttons">
+<div class="floating-btn" onclick="modo()" title="Modo oscuro/claro">🌓</div>
+<div class="floating-btn chat-btn" onclick="toggleChatWindow()" title="Chat">💬</div>
+</div>
+
+<div id="chatWindow" class="chat-window-container">
+  <div class="chat-window">
+    <div class="chat-header">
+      <span>💬 Chat entre jugadores</span>
+      <button onclick="toggleChatWindow()">✕</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-message system">✨ Chat listo! Los mensajes se envían en tiempo real</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter') enviarMensajeChat()">
+      <button onclick="enviarMensajeChat()">📨</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// VARIABLES GLOBALES
+let ws = null;
+let jugadorId = null;
+let nombres = ["", ""];
+let stats = [{}, {}];
+let audioActivo = true;
+let partidaIniciada = false;
+let miNombre = "";
+
+let scoreJ1 = 0;
+let scoreJ2 = 0;
+
+const scoreJ1Elem = document.getElementById("scoreJ1");
+const scoreJ2Elem = document.getElementById("scoreJ2");
+const chatMessagesDiv = document.getElementById("chatMessages");
+const chatWindow = document.getElementById("chatWindow");
+
+const reglas = {
+  piedra: { tijera: "Piedra rompe tijera", lagarto: "Piedra aplasta lagarto" },
+  papel: { piedra: "Papel cubre piedra", spock: "Papel refuta Spock" },
+  tijera: { papel: "Tijera corta papel", lagarto: "Tijera decapita lagarto" },
+  lagarto: { spock: "Lagarto envenena Spock", papel: "Lagarto come papel" },
+  spock: { tijera: "Spock rompe tijera", piedra: "Spock vaporiza piedra" }
+};
+
+const audioWin = new Audio("https://actions.google.com/sounds/v1/cartoon/siren_whistle.ogg");
+const audioLose = new Audio("https://actions.google.com/sounds/v1/weapons/machine_gun_hit_car.ogg");
+const audioDraw = new Audio("https://actions.google.com/sounds/v1/alarms/bugle_tune.ogg");
+
+// CONEXIÓN WEBSOCKET
+function initWebSocket() {
+  const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+  const wsUrl = `${protocol}//${location.host}`;
+  ws = new WebSocket(wsUrl);
+  
+  ws.onopen = () => {
+    console.log("✅ Conectado al servidor");
+    agregarMensajeSistema("✅ Conectado al servidor");
+  };
+  
+  ws.onmessage = (msg) => {
+    const data = JSON.parse(msg.data);
+    manejarMensajeServidor(data);
+  };
+  
+  ws.onerror = () => {
+    agregarMensajeSistema("⚠️ Error de conexión");
+  };
+  
+  ws.onclose = () => {
+    if(partidaIniciada) {
+      agregarMensajeSistema("❌ Conexión perdida");
+    }
+  };
+}
+
+function manejarMensajeServidor(data) {
+  if (data.tipo === "asignado") {
+    jugadorId = data.jugador;
+    console.log("Soy jugador:", jugadorId);
+    return;
+  }
+  
+  if (data.tipo === "inicio") {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("juego").style.display = "block";
+    partidaIniciada = true;
+    
+    nombres = data.jugadores || ["Jugador 1", "Jugador 2"];
+    document.getElementById("jugadores").innerText = nombres[0] + " vs " + nombres[1];
+    document.getElementById("nombre1").innerText = nombres[0];
+    document.getElementById("nombre2").innerText = nombres[1];
+    
+    stats = [{}, {}];
+    actualizarStatsUI();
+    
+    agregarMensajeSistema(`🎮 Partida: ${nombres[0]} vs ${nombres[1]}`);
+    return;
+  }
+  
+  if (data.tipo === "resultado") {
+    stats[0][data.m1] = (stats[0][data.m1] || 0) + 1;
+    stats[1][data.m2] = (stats[1][data.m2] || 0) + 1;
+    actualizarStatsUI();
+    
+    if (data.ganador === 1) {
+      scoreJ1++;
+      actualizarScoreUI();
+      sonido(jugadorId === 0 ? "win" : "lose");
+    } else if (data.ganador === 2) {
+      scoreJ2++;
+      actualizarScoreUI();
+      sonido(jugadorId === 1 ? "win" : "lose");
+    } else if (data.ganador === 0) {
+      sonido("draw");
+    }
+    
+    mostrarResultadoRonda(data);
+    return;
+  }
+  
+  // MENSAJE DE CHAT RECIBIDO
+  if (data.tipo === "chat") {
+    // Usar el remitente enviado por el servidor (es el nombre real del jugador)
+    let nombreRemitente = data.remitente || "Jugador";
+    
+    // Si el remitente es el jugador 0, usar nombres[0]; si es jugador 1, usar nombres[1]
+    if (data.jugadorIndex === 0 && nombres[0]) {
+      nombreRemitente = nombres[0];
+    } else if (data.jugadorIndex === 1 && nombres[1]) {
+      nombreRemitente = nombres[1];
+    }
+    
+    agregarMensajeRecibido(nombreRemitente, data.mensaje);
+    
+    if (!chatWindow.classList.contains("open")) {
+      mostrarNotificacionChat(`💬 ${nombreRemitente}: ${data.mensaje.substring(0, 30)}`);
+    }
+    return;
+  }
+  
+  if (data.tipo === "esperando") {
+    document.getElementById("estado").innerText = data.mensaje || "Esperando oponente...";
+    return;
+  }
+}
+
+function mostrarResultadoRonda(data) {
+  let j1 = nombres[0] || "Jugador 1";
+  let j2 = nombres[1] || "Jugador 2";
+  let texto = "";
+  
+  if (data.ganador === 0) {
+    texto = `🤝 EMPATE\n\n${j1} jugó: ${data.m1}\n${j2} jugó: ${data.m2}`;
+    document.getElementById("estado").innerText = texto;
+    return;
+  }
+  
+  let regla = "";
+  if (reglas[data.m1] && reglas[data.m1][data.m2]) regla = reglas[data.m1][data.m2];
+  else if (reglas[data.m2] && reglas[data.m2][data.m1]) regla = reglas[data.m2][data.m1];
+  
+  if (data.ganador === 1) {
+    texto = `🏆 ${j1} GANA\n\n${regla}\n\n${j1}: ${data.m1}\n${j2}: ${data.m2}`;
+  } else if (data.ganador === 2) {
+    texto = `🏆 ${j2} GANA\n\n${regla}\n\n${j1}: ${data.m1}\n${j2}: ${data.m2}`;
+  }
+  document.getElementById("estado").innerText = texto;
+}
+
+function actualizarStatsUI() {
+  const iconos = { piedra: "🪨", papel: "📄", tijera: "✂️", lagarto: "🦎", spock: "🖖" };
+  let s1 = "", s2 = "";
+  for (let k in stats[0]) s1 += `<span class="badge">${iconos[k]} ${stats[0][k]}</span>`;
+  for (let k in stats[1]) s2 += `<span class="badge">${iconos[k]} ${stats[1][k]}</span>`;
+  document.getElementById("stats1").innerHTML = s1 || "<span class='badge'>-</span>";
+  document.getElementById("stats2").innerHTML = s2 || "<span class='badge'>-</span>";
+}
+
+function actualizarScoreUI() {
+  if (scoreJ1Elem) scoreJ1Elem.innerText = scoreJ1;
+  if (scoreJ2Elem) scoreJ2Elem.innerText = scoreJ2;
+}
+
+// Función con confirmación para reiniciar score
+function confirmarResetScore() {
+  if (confirm("¿Reiniciar marcador?\nLos puntajes volverán a 0.")) {
+    scoreJ1 = 0;
+    scoreJ2 = 0;
+    actualizarScoreUI();
+    agregarMensajeSistema("🔄 Marcador reiniciado");
+  }
+}
+
+function buscar() {
+  miNombre = document.getElementById("nombre").value.trim();
+  if (miNombre === "") miNombre = "Anónimo";
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ tipo: "buscar", nombre: miNombre }));
+    document.getElementById("estado").innerText = "🔎 Buscando oponente...";
+    agregarMensajeSistema(`🔎 Buscando partida como "${miNombre}"`);
+  } else {
+    alert("Conectando al servidor...");
+    initWebSocket();
+    setTimeout(() => {
+      if(ws && ws.readyState === WebSocket.OPEN) buscar();
+    }, 800);
+  }
+}
+
+function tirar(opcion) {
+  if (!partidaIniciada) {
+    document.getElementById("estado").innerText = "Esperando inicio de partida...";
+    return;
+  }
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ tipo: "movimiento", opcion: opcion }));
+    document.getElementById("estado").innerText = "⏳ Turno enviado...";
+  }
+}
+
+function jugarIA() {
+  let opcion = prompt("Elige: piedra, papel, tijera, lagarto, spock").toLowerCase();
+  const validas = ["piedra","papel","tijera","lagarto","spock"];
+  if (!validas.includes(opcion)) {
+    alert("Opción no válida");
+    return;
+  }
+  miNombre = document.getElementById("nombre").value.trim() || "Jugador";
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ tipo: "ia", opcion: opcion, nombre: miNombre }));
+    document.getElementById("estado").innerText = "🤖 Jugando vs IA...";
+  } else {
+    alert("Conectando...");
+    initWebSocket();
+    setTimeout(() => jugarIA(), 600);
+  }
+}
+
+function toggleChatWindow() {
+  chatWindow.classList.toggle("open");
+}
+
+function enviarMensajeChat() {
+  const input = document.getElementById("chatInput");
+  const mensaje = input.value.trim();
+  if (mensaje === "") return;
+  
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    agregarMensajeSistema("❌ No hay conexión");
+    return;
+  }
+  
+  // Determinar el nombre a mostrar en el mensaje propio
+  const nombreMostrar = miNombre || (jugadorId === 0 ? nombres[0] : nombres[1]) || "Yo";
+  
+  // Enviar al servidor con el nombre real
+  ws.send(JSON.stringify({ 
+    tipo: "chat", 
+    mensaje: mensaje,
+    nombre: miNombre || nombreMostrar
+  }));
+  
+  // Mostrar mensaje propio (lado derecho) con el nombre correcto
+  agregarMensajePropio(nombreMostrar, mensaje);
+  input.value = "";
+}
+
+function agregarMensajePropio(remitente, texto) {
+  const msgDiv = document.createElement("div");
+  msgDiv.classList.add("chat-message", "own");
+  msgDiv.innerText = `${remitente}: ${texto}`;
+  chatMessagesDiv.appendChild(msgDiv);
+  chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+  limpiarMensajesExceso();
+}
+
+function agregarMensajeRecibido(remitente, texto) {
+  const msgDiv = document.createElement("div");
+  msgDiv.classList.add("chat-message", "other");
+  // Asegurar que el remitente sea el nombre real del adversario
+  msgDiv.innerText = `${remitente}: ${texto}`;
+  chatMessagesDiv.appendChild(msgDiv);
+  chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+  limpiarMensajesExceso();
+}
+
+function agregarMensajeSistema(texto) {
+  const msgDiv = document.createElement("div");
+  msgDiv.classList.add("chat-message", "system");
+  msgDiv.innerText = `📢 ${texto}`;
+  chatMessagesDiv.appendChild(msgDiv);
+  chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+  limpiarMensajesExceso();
+}
+
+function mostrarNotificacionChat(texto) {
+  const notif = document.createElement("div");
+  notif.className = "notificacion-chat";
+  notif.innerText = texto;
+  document.body.appendChild(notif);
+  setTimeout(() => {
+    if(notif && notif.remove) notif.remove();
+  }, 3000);
+}
+
+function limpiarMensajesExceso() {
+  while(chatMessagesDiv.children.length > 100) {
+    chatMessagesDiv.removeChild(chatMessagesDiv.firstChild);
+  }
+}
+
+function toggleAudio() {
+  audioActivo = !audioActivo;
+  document.getElementById("btnAudio").innerText = audioActivo ? "🔊" : "🔇";
+}
+
+function modo() {
+  document.body.classList.toggle("claro");
+}
+
+function sonido(tipo) {
+  if (!audioActivo) return;
+  let a = null;
+  if (tipo === "win") a = audioWin;
+  if (tipo === "lose") a = audioLose;
+  if (tipo === "draw") a = audioDraw;
+  if (a) {
+    let clone = a.cloneNode();
+    clone.volume = 0.5;
+    clone.play().catch(() => {});
+  }
+}
+
+// Exponer funciones globales
+window.buscar = buscar;
+window.tirar = tirar;
+window.jugarIA = jugarIA;
+window.toggleAudio = toggleAudio;
+window.modo = modo;
+window.toggleChatWindow = toggleChatWindow;
+window.enviarMensajeChat = enviarMensajeChat;
+window.confirmarResetScore = confirmarResetScore;
+
+initWebSocket();
+
+setTimeout(() => {
+  agregarMensajeSistema("💬 Chat listo! Los mensajes se comparten con tu oponente");
+}, 1000);
+</script>
+</body>
+</html>
