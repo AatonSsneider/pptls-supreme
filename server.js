@@ -1,0 +1,244 @@
+const express=require("express")
+const http=require("http")
+const WebSocket=require("ws")
+const cors=require("cors")
+const {v4:uuidv4}=require("uuid")
+const fs=require("fs-extra")
+
+const app=express()
+const server=http.createServer(app)
+const wss=new WebSocket.Server({server})
+
+app.use(cors())
+app.use(express.static("public"))
+
+const PORT=process.env.PORT||3000
+
+let salas=[]
+let jugadoresOnline=0
+
+let ranking={}
+let stats={partidas:0}
+let achievements={}
+
+function loadDB(){
+try{
+ranking=fs.readJsonSync("./database/ranking.json")
+stats=fs.readJsonSync("./database/stats.json")
+achievements=fs.readJsonSync("./database/achievements.json")
+}catch{}
+}
+
+function saveDB(){
+fs.writeJsonSync("./database/ranking.json",ranking)
+fs.writeJsonSync("./database/stats.json",stats)
+fs.writeJsonSync("./database/achievements.json",achievements)
+}
+
+loadDB()
+
+function crearSala(){
+const sala={
+id:uuidv4(),
+jugadores:[],
+movimientos:{}
+}
+salas.push(sala)
+return sala
+}
+
+function buscarSala(){
+for(let s of salas){
+if(s.jugadores.length<2)return s
+}
+return crearSala()
+}
+
+function calcularGanador(a,b){
+const reglas={
+piedra:["tijera","lagarto"],
+papel:["piedra","spock"],
+tijera:["papel","lagarto"],
+lagarto:["spock","papel"],
+spock:["tijera","piedra"]
+}
+if(a===b)return 0
+if(reglas[a].includes(b))return 1
+return 2
+}
+
+function movimientoIA(){
+const opciones=["piedra","papel","tijera","lagarto","spock"]
+return opciones[Math.floor(Math.random()*5)]
+}
+
+wss.on("connection",ws=>{
+
+jugadoresOnline++
+
+ws.send(JSON.stringify({
+tipo:"online",
+jugadores:jugadoresOnline
+}))
+
+ws.on("message",msg=>{
+
+const data=JSON.parse(msg)
+
+if(data.tipo==="buscar"){
+
+const sala=buscarSala()
+
+const jugador={
+ws,
+nombre:data.nombre,
+id:sala.jugadores.length
+}
+
+sala.jugadores.push(jugador)
+
+ws.sala=sala
+ws.idJugador=jugador.id
+ws.nombreJugador=jugador.nombre
+
+ws.send(JSON.stringify({
+tipo:"asignado",
+jugador:jugador.id
+}))
+
+if(sala.jugadores.length===2){
+
+sala.jugadores.forEach(j=>{
+j.ws.send(JSON.stringify({
+tipo:"inicio",
+jugadores:[
+sala.jugadores[0].nombre,
+sala.jugadores[1].nombre
+]
+}))
+})
+
+}
+
+}
+
+if(data.tipo==="movimiento"){
+
+const sala=ws.sala
+if(!sala)return
+
+sala.movimientos[ws.idJugador]=data.opcion
+
+if(Object.keys(sala.movimientos).length===2){
+resolverRonda(sala)
+}
+
+}
+
+// NUEVO: MANEJO DE MENSAJES DE CHAT
+if(data.tipo==="chat"){
+
+const sala=ws.sala
+if(!sala || sala.jugadores.length<2) return
+
+// Obtener el nombre del remitente
+const remitente = ws.nombreJugador || "Jugador"
+
+// Enviar el mensaje al otro jugador (o a todos en la sala)
+sala.jugadores.forEach(jugador => {
+// Enviar a todos EXCEPTO al remitente (o enviar a todos, depende)
+// Para que ambos vean los mensajes, enviamos a todos los jugadores
+// Incluyendo al remitente para que tenga confirmación visual
+jugador.ws.send(JSON.stringify({
+tipo:"chat",
+mensaje:data.mensaje,
+remitente:remitente,
+jugadorIndex:jugador.id,
+timestamp:Date.now()
+}))
+})
+
+}
+
+if(data.tipo==="ia"){
+
+const m1=data.opcion
+const m2=movimientoIA()
+
+const ganador=calcularGanador(m1,m2)
+
+ws.send(JSON.stringify({
+tipo:"resultado",
+m1,
+m2,
+ganador
+}))
+
+}
+
+})
+
+ws.on("close",()=>{
+jugadoresOnline--
+// Limpiar salas si un jugador se desconecta
+if(ws.sala){
+const sala=ws.sala
+const index=sala.jugadores.findIndex(j=>j.ws===ws)
+if(index!==-1){
+sala.jugadores.splice(index,1)
+}
+// Si la sala quedó vacía, eliminarla
+if(sala.jugadores.length===0){
+const salaIndex=salas.findIndex(s=>s.id===sala.id)
+if(salaIndex!==-1) salas.splice(salaIndex,1)
+}
+}
+})
+
+})
+
+function resolverRonda(sala){
+
+const m1=sala.movimientos[0]
+const m2=sala.movimientos[1]
+
+const ganador=calcularGanador(m1,m2)
+
+stats.partidas++
+
+if(ganador!==0){
+
+const nombre=sala.jugadores[ganador-1].nombre
+
+ranking[nombre]=(ranking[nombre]||0)+1
+
+if(ranking[nombre]>=10){
+achievements[nombre]="Maestro PPTLS"
+}
+
+}
+
+saveDB()
+
+sala.jugadores.forEach(j=>{
+
+j.ws.send(JSON.stringify({
+tipo:"resultado",
+m1,
+m2,
+ganador,
+ranking,
+stats,
+achievements
+}))
+
+})
+
+sala.movimientos={}
+
+}
+
+server.listen(PORT,()=>{
+console.log("PPTLS SUPREME activo en puerto",PORT)
+console.log("✅ Chat soportado - Los mensajes se comparten entre jugadores")
+})
